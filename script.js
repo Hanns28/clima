@@ -47,7 +47,7 @@ document.addEventListener('click', (e) => {
   ////////////////////////////////////
 
   function validarCiudad(ciudad) {
-    const regex = /^[a-zA-Z\sáéíóúÁÉÍÓÚñÑ]+$/;
+    const regex = /^[a-zA-Z\sáéíóúÁÉÍÓÚñÑ,.-]+$/;
     if (!ciudad.trim()) {
       weatherResults.innerHTML = '<p class="error-message">Por favor, introduce el nombre de una ciudad.</p>';
       return false;
