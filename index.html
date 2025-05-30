@@ -10,12 +10,15 @@
   <div class="weather-container">
     <h1>Consulta el Clima</h1>
     <div class="input-section">
-      <input type="text" id="city-input" placeholder="Introduce una ciudad (ej. Andahuaylas)">
-      <button id="get-weather-btn">Buscar Clima</button>
+        <input type="text" id="city-input" placeholder="Introduce una ciudad (ej. Andahuaylas)" autocomplete="off">
+        <div id="suggestions" class="suggestions"></div>
+        <button id="get-weather-btn">Buscar Clima</button>
     </div>
     <div id="weather-results" class="weather-results">
       <p>Introduce una ciudad o permite la geolocalización.</p>
     </div>
+    
+
   </div>
 
   <script src="script.js"></script>

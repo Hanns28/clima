@@ -4,6 +4,48 @@ document.addEventListener('DOMContentLoaded', () => {
   const weatherResults = document.getElementById('weather-results');
   const API_KEY = '91de2d0144d145ce92d213500252205';
 
+  ////////////////////////////////////
+  const suggestionsBox = document.getElementById('suggestions');
+
+// Autocompletado
+cityInput.addEventListener('input', async () => {
+  const query = cityInput.value.trim();
+  if (query.length < 3) {
+    suggestionsBox.innerHTML = '';
+    return;
+  }
+
+  try {
+    const response = await fetch(`https://api.weatherapi.com/v1/search.json?key=${API_KEY}&q=${query}`);
+    const results = await response.json();
+
+    if (Array.isArray(results)) {
+      suggestionsBox.innerHTML = results.map(city => `
+        <div data-name="${city.name}, ${city.country}">${city.name}, ${city.region}, ${city.country}</div>
+      `).join('');
+    }
+  } catch (error) {
+    console.error('Error al obtener sugerencias:', error);
+  }
+});
+
+// Clic en una sugerencia
+suggestionsBox.addEventListener('click', (e) => {
+  if (e.target && e.target.dataset.name) {
+    cityInput.value = e.target.dataset.name;
+    suggestionsBox.innerHTML = '';
+  }
+});
+
+// Ocultar sugerencias al perder foco
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.input-section')) {
+    suggestionsBox.innerHTML = '';
+  }
+});
+
+  ////////////////////////////////////
+
   function validarCiudad(ciudad) {
     const regex = /^[a-zA-Z\sáéíóúÁÉÍÓÚñÑ]+$/;
     if (!ciudad.trim()) {
