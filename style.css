@@ -1,112 +1,58 @@
-/* General */
 body {
-    font-family: Arial, sans-serif;
-    background: linear-gradient(to right, #74ebd5, #acb6e5);
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+  font-family: Arial, sans-serif;
+  background: #e0f7fa;
+  margin: 0;
+  padding: 20px;
+  text-align: center;
 }
 
-/* Contenedor principal */
 .weather-container {
-    background-color: #ffffffcc;
-    padding: 30px 40px;
-    border-radius: 20px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
-    width: 100%;
-    max-width: 500px;
-    text-align: center;
+  max-width: 600px;
+  margin: auto;
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Título */
-.weather-container h1 {
-    margin-bottom: 20px;
-    color: #333;
-}
-
-/* Sección de entrada */
 .input-section {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-    justify-content: center;
+  margin-bottom: 20px;
 }
 
 .input-section input {
-    padding: 10px;
-    width: 70%;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    font-size: 16px;
+  padding: 10px;
+  width: 70%;
+  font-size: 16px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
 }
 
 .input-section button {
-    padding: 10px 20px;
-    background-color: #2196f3;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
+  padding: 10px 20px;
+  font-size: 16px;
+  margin-left: 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #03a9f4;
+  color: white;
+  cursor: pointer;
 }
 
-.input-section button:hover {
-    background-color: #1976d2;
-}
-
-/* Resultados del clima */
 .weather-results {
-    margin-top: 10px;
-    text-align: left;
+  margin-top: 20px;
 }
 
-.weather-results h2 {
-    margin-top: 0;
-    color: #444;
-}
-
-.weather-results p {
-    margin: 6px 0;
-    font-size: 16px;
-    color: #222;
-}
-
-.weather-icon {
-    vertical-align: middle;
-    width: 30px;
-    height: 30px;
-}
-
-/* Mensajes de error o información */
-.error-message {
-    color: #b00020;
-    font-weight: bold;
-}
-
-.success-message {
-    color: #007e33;
-    font-weight: bold;
-}
 .weather-icon-large {
-    width: 80px;
-    height: 80px;
-    vertical-align: middle;
-}
-
-.forecast-day {
-    border: 1px solid #ddd;
-    border-radius: 12px;
-    padding: 10px;
-    margin-top: 10px;
-    background-color: #f9f9f9;
-    text-align: center;
+  width: 80px;
+  vertical-align: middle;
 }
 
 .forecast-icon {
-    width: 60px;
-    height: 60px;
+  width: 64px;
+  margin: 10px 0;
+}
+
+.forecast-day {
+  border-top: 1px solid #ccc;
+  padding: 10px 0;
 }
