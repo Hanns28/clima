@@ -2,142 +2,208 @@ document.addEventListener('DOMContentLoaded', () => {
   const cityInput = document.getElementById('city-input');
   const getWeatherBtn = document.getElementById('get-weather-btn');
   const weatherResults = document.getElementById('weather-results');
+  const suggestionsBox = document.getElementById('suggestions');
   const API_KEY = '91de2d0144d145ce92d213500252205';
 
-  ////////////////////////////////////
-  const suggestionsBox = document.getElementById('suggestions');
+  // -----------------------
+  // UTILIDADES
+  // -----------------------
 
-// Autocompletado
-cityInput.addEventListener('input', async () => {
-  const query = cityInput.value.trim();
-  if (query.length < 3) {
+  // Función para limpiar las sugerencias
+  function clearSuggestions() {
     suggestionsBox.innerHTML = '';
-    return;
+    suggestionsBox.style.display = 'none';
   }
 
-  try {
-    const response = await fetch(`https://api.weatherapi.com/v1/search.json?key=${API_KEY}&q=${query}`);
-    const results = await response.json();
-
-    if (Array.isArray(results)) {
-      suggestionsBox.innerHTML = results.map(city => `
-        <div data-name="${city.name}, ${city.country}">${city.name}, ${city.region}, ${city.country}</div>
-      `).join('');
-    }
-  } catch (error) {
-    console.error('Error al obtener sugerencias:', error);
+  // Función para mostrar mensaje de error en el área de resultados
+  function showError(message) {
+    weatherResults.innerHTML = `
+      <p class="error-message animate__animated animate__shakeX">${message}</p>
+    `;
   }
-});
 
-// Clic en una sugerencia
-suggestionsBox.addEventListener('click', (e) => {
-  if (e.target && e.target.dataset.name) {
-    cityInput.value = e.target.dataset.name;
-    suggestionsBox.innerHTML = '';
-  }
-});
-
-// Ocultar sugerencias al perder foco
-document.addEventListener('click', (e) => {
-  if (!e.target.closest('.input-section')) {
-    suggestionsBox.innerHTML = '';
-  }
-});
-
-  ////////////////////////////////////
-
+  // Función para validar el nombre de ciudad (letras, espacios y comas)
   function validarCiudad(ciudad) {
-    const regex = /^[a-zA-Z\sáéíóúÁÉÍÓÚñÑ,.-]+$/;
+    // Permite letras (may/min), espacios y comas
+    const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s,]+$/;
     if (!ciudad.trim()) {
-      weatherResults.innerHTML = '<p class="error-message">Por favor, introduce el nombre de una ciudad.</p>';
+      showError('Por favor, introduce el nombre de una ciudad.');
       return false;
     }
     if (!regex.test(ciudad)) {
-      weatherResults.innerHTML = '<p class="error-message">El nombre de la ciudad solo debe contener letras.</p>';
+      showError('El nombre de la ciudad solo debe contener letras, espacios o comas.');
       return false;
     }
     return true;
   }
 
-  getWeatherBtn.addEventListener('click', async () => {
-    const city = cityInput.value.trim();
-    if (!validarCiudad(city)) return;
-    weatherResults.innerHTML = '<p>Cargando datos del clima...</p>';
-    await buscarClimaConPronostico(city);
+  // -----------------------
+  // AUTOCOMPLETADO
+  // -----------------------
+
+  cityInput.addEventListener('input', async () => {
+    const query = cityInput.value.trim();
+
+    // Mostrar sugerencias solo si hay 3+ caracteres
+    if (query.length < 3) {
+      clearSuggestions();
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://api.weatherapi.com/v1/search.json?key=${API_KEY}&q=${encodeURIComponent(query)}`
+      );
+      const results = await response.json();
+
+      if (Array.isArray(results) && results.length > 0) {
+        // Mostrar sugerencias en lista
+        suggestionsBox.innerHTML = results
+          .map(city => `
+            <div class="suggestion-item" data-name="${city.name}, ${city.region}, ${city.country}">
+              <i class="fas fa-map-marker-alt"></i> ${city.name}, ${city.region}, ${city.country}
+            </div>
+          `).join('');
+        suggestionsBox.style.display = 'block';
+      } else {
+        clearSuggestions();
+      }
+    } catch (error) {
+      console.error('Error al obtener sugerencias:', error);
+      clearSuggestions();
+    }
   });
 
-  async function buscarClimaConPronostico(city) {
-    try {
-      const response = await fetch(`https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${city}&lang=es&days=3`);
-      if (!response.ok) {
-        const errorData = await response.json();
-        const errorMessage = errorData?.error?.message || 'Error desconocido.';
-        weatherResults.innerHTML = `<p class="error-message">Error: ${errorMessage}</p>`;
-        return;
-      }
-      const data = await response.json();
-      displayWeatherWithForecast(data);
-    } catch (error) {
-      console.error('Error al obtener los datos del clima:', error);
-      weatherResults.innerHTML = `<p class="error-message">Hubo un problema al obtener el clima. Inténtalo de nuevo más tarde.</p>`;
+  // Manejo clic en sugerencia: completar input y ocultar sugerencias
+  suggestionsBox.addEventListener('click', e => {
+    if (e.target.closest('.suggestion-item')) {
+      const selected = e.target.closest('.suggestion-item').dataset.name;
+      cityInput.value = selected;
+      clearSuggestions();
     }
+  });
+
+  // Ocultar sugerencias si clic fuera del input o sugerencias
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.input-section')) {
+      clearSuggestions();
+    }
+  });
+
+  // -----------------------
+  // BUSCAR Y MOSTRAR CLIMA
+  // -----------------------
+
+  getWeatherBtn.addEventListener('click', async () => {
+    const city = cityInput.value.trim();
+
+    if (!validarCiudad(city)) return;
+
+    // Mostrar mensaje de carga
+    weatherResults.innerHTML = `
+      <p class="loading animate__animated animate__pulse">Cargando datos del clima...</p>
+    `;
+
+    try {
+      const data = await obtenerDatosClima(city);
+      if (data) {
+        mostrarClimaConPronostico(data);
+      }
+    } catch {
+      showError('No se pudo obtener el clima. Inténtalo más tarde.');
+    }
+  });
+
+  // Función que obtiene datos del clima con pronóstico desde API
+  async function obtenerDatosClima(city) {
+    const url = `https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${encodeURIComponent(city)}&lang=es&days=3`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      const errorMessage = errorData?.error?.message || 'Error desconocido.';
+      showError(`Error: ${errorMessage}`);
+      return null;
+    }
+
+    return await response.json();
   }
 
-  function displayWeatherWithForecast(data) {
+  // Función que muestra los datos de clima y pronóstico en el HTML
+  function mostrarClimaConPronostico(data) {
     if (!data || !data.location || !data.current || !data.forecast) {
-      weatherResults.innerHTML = '<p class="error-message">No se pudieron obtener los datos del clima para esta ubicación.</p>';
+      showError('No se pudieron obtener datos del clima para esta ubicación.');
       return;
     }
 
     const { location, current, forecast } = data;
-    let html = `
-      <h2>${location.name}, ${location.country}</h2>
-      <p><strong>Condición actual:</strong> ${current.condition.text} 
-        <img src="${current.condition.icon}" alt="Clima actual" class="weather-icon-large">
-      </p>
-      <p><strong>Temperatura:</strong> ${current.temp_c}°C / ${current.temp_f}°F</p>
-      <p><strong>Sensación térmica:</strong> ${current.feelslike_c}°C</p>
-      <p><strong>Humedad:</strong> ${current.humidity}%</p>
-      <p><strong>Viento:</strong> ${current.wind_kph} km/h (${current.wind_dir})</p>
-      <p><strong>Última actualización:</strong> ${location.localtime}</p>
-      <hr>
-      <h3>Pronóstico para los próximos 3 días:</h3>
+
+    // Estructura para clima actual
+    const climaActual = `
+      <div class="weather-today animate__animated animate__fadeInDown">
+        <h2><i class="fas fa-map-marker-alt"></i> ${location.name}, ${location.country}</h2>
+        <p><strong>Condición actual:</strong> ${current.condition.text} 
+          <img src="${current.condition.icon}" alt="Clima actual" class="weather-icon-large">
+        </p>
+        <p><strong>Temperatura:</strong> ${current.temp_c}°C / ${current.temp_f}°F</p>
+        <p><strong>Sensación térmica:</strong> ${current.feelslike_c}°C</p>
+        <p><strong>Humedad:</strong> ${current.humidity}%</p>
+        <p><strong>Viento:</strong> ${current.wind_kph} km/h (${current.wind_dir})</p>
+        <p><small><i class="fas fa-clock"></i> Última actualización: ${location.localtime}</small></p>
+      </div>
     `;
 
+    // Construir pronóstico extendido para los próximos 3 días
+    let pronosticoHTML = '<div class="forecast-container">';
     forecast.forecastday.forEach(day => {
-      html += `
-        <div class="forecast-day">
-          <p><strong>${new Date(day.date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}</strong></p>
-          <img src="${day.day.condition.icon}" class="forecast-icon" alt="icono">
+      const fechaLegible = new Date(day.date).toLocaleDateString('es-ES', {
+        weekday: 'long', day: 'numeric', month: 'long'
+      });
+
+      pronosticoHTML += `
+        <div class="forecast-day animate__animated animate__fadeInUp">
+          <p><strong>${fechaLegible}</strong></p>
+          <img src="${day.day.condition.icon}" class="forecast-icon" alt="${day.day.condition.text}">
           <p>${day.day.condition.text}</p>
           <p>🌡️ Máx: ${day.day.maxtemp_c}°C / Mín: ${day.day.mintemp_c}°C</p>
           <p>💧 Humedad: ${day.day.avghumidity}%</p>
+          <p>🌬️ Viento: ${day.day.maxwind_kph} km/h</p>
         </div>
       `;
     });
+    pronosticoHTML += '</div>';
 
-    weatherResults.innerHTML = html;
+    // Actualizar contenedor con toda la info
+    weatherResults.innerHTML = climaActual + pronosticoHTML;
   }
 
-  // Geolocalización automática al cargar la página
+  // -----------------------
+  // GEOLOCALIZACIÓN AUTOMÁTICA AL CARGAR
+  // -----------------------
+
   async function obtenerClimaPorGeolocalizacion() {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(async (pos) => {
-        const lat = pos.coords.latitude;
-        const lon = pos.coords.longitude;
-        weatherResults.innerHTML = '<p>Detectando ubicación actual...</p>';
-        try {
-          const response = await fetch(`https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${lat},${lon}&lang=es&days=3`);
-          const data = await response.json();
-          displayWeatherWithForecast(data);
-        } catch (error) {
-          weatherResults.innerHTML = '<p class="error-message">No se pudo obtener el clima desde tu ubicación.</p>';
-        }
-      }, (error) => {
-        console.warn("No se pudo obtener la ubicación del usuario.", error);
-      });
-    }
+    if (!('geolocation' in navigator)) return;
+
+    weatherResults.innerHTML = `
+      <p class="loading animate__animated animate__pulse">Detectando ubicación actual...</p>
+    `;
+
+    navigator.geolocation.getCurrentPosition(async pos => {
+      const lat = pos.coords.latitude;
+      const lon = pos.coords.longitude;
+
+      try {
+        const data = await obtenerDatosClima(`${lat},${lon}`);
+        if (data) mostrarClimaConPronostico(data);
+      } catch {
+        showError('No se pudo obtener el clima desde tu ubicación.');
+      }
+    }, error => {
+      console.warn('No se pudo obtener la ubicación del usuario.', error);
+      weatherResults.innerHTML = '';
+    });
   }
 
-  obtenerClimaPorGeolocalizacion(); // Ejecutar al cargar
+  obtenerClimaPorGeolocalizacion();
+
 });

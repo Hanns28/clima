@@ -1,24 +1,43 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Clima con Pronóstico</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Clima con Pronóstico Mejorado</title>
+
+  <!-- Animate.css para animaciones -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+  />
+
+  <!-- Font Awesome para iconos -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+  />
+
+  <!-- Archivo CSS separado -->
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="weather-container">
-    <h1>Consulta el Clima</h1>
-    <div class="input-section">
-        <input type="text" id="city-input" placeholder="Introduce una ciudad (ej. Andahuaylas)" autocomplete="off">
-        <div id="suggestions" class="suggestions"></div>
-        <button id="get-weather-btn">Buscar Clima</button>
-    </div>
-    <div id="weather-results" class="weather-results">
-      <p>Introduce una ciudad o permite la geolocalización.</p>
-    </div>
-    
+  <div class="weather-container animate__animated animate__fadeIn">
+    <h1><i class="fas fa-cloud-sun"></i> Consulta el Clima</h1>
 
+    <div class="input-section">
+      <input
+        type="text"
+        id="city-input"
+        placeholder="Introduce una ciudad (ej. Andahuaylas)"
+        autocomplete="off"
+      />
+      <div id="suggestions" class="suggestions"></div>
+      <button id="get-weather-btn">
+        <i class="fas fa-search-location"></i> Buscar Clima
+      </button>
+    </div>
+
+    <div id="weather-results" class="animate__animated animate__fadeIn"></div>
   </div>
 
   <script src="script.js"></script>
