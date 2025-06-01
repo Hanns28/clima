@@ -252,3 +252,8 @@ h1 {
     width: 90%;
   }
 }
+#suggestions div.selected {
+  background-color: #00bfff;
+  color: white;
+}
+

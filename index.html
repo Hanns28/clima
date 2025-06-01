@@ -43,3 +43,40 @@
   <script src="script.js"></script>
 </body>
 </html>
+<script>
+let currentSelectionIndex = -1;
+
+const cityInput = document.getElementById("city-input");
+const suggestionsContainer = document.getElementById("suggestions");
+
+cityInput.addEventListener("keydown", function (e) {
+  const suggestions = suggestionsContainer.querySelectorAll("div");
+
+  if (e.key === "ArrowDown") {
+    e.preventDefault();
+    currentSelectionIndex++;
+    if (currentSelectionIndex >= suggestions.length) {
+      currentSelectionIndex = 0;
+    }
+    updateSelection(suggestions);
+  } else if (e.key === "ArrowUp") {
+    e.preventDefault();
+    currentSelectionIndex--;
+    if (currentSelectionIndex < 0) {
+      currentSelectionIndex = suggestions.length - 1;
+    }
+    updateSelection(suggestions);
+  } else if (e.key === "Enter") {
+    if (currentSelectionIndex >= 0 && currentSelectionIndex < suggestions.length) {
+      e.preventDefault();
+      suggestions[currentSelectionIndex].click();
+    }
+  }
+});
+
+function updateSelection(suggestions) {
+  suggestions.forEach((el, idx) => {
+    el.classList.toggle("selected", idx === currentSelectionIndex);
+  });
+}
+</script>
